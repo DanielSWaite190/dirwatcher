@@ -29,12 +29,24 @@ def watch_directory(path, magic_string, extension, interval):
     
     for director in os.listdir(path):
         if os.path.isfile(os.path.join(os.path.abspath(path), director)):
-            directory_model [director] = 1
+            directory_model [director] = 0
 
-    print(directory_model)
+    # print(directory_model)
+
+    scan_single_file(
+        "/Users/daniel/Applications/visual_studio_code/kenzie/q3/dirwatcher-DanielSWaite190/logs/ipod.txt",
+        2
+        )
+
     return
 
-# def scan_single_file():
+def scan_single_file(file ,line):
+    with open (file, "r") as f:
+        for line in f[int(line):]:
+            f.readline()
+
+
+
 # def detect_added_files():
 # def detect_removed_files():
 
