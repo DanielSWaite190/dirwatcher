@@ -9,6 +9,7 @@ import signal
 import time
 import sys
 import os
+import re
 
 exit_flag = False
 
@@ -35,15 +36,21 @@ def watch_directory(path, magic_string, extension, interval):
 
     scan_single_file(
         "/Users/daniel/Applications/visual_studio_code/kenzie/q3/dirwatcher-DanielSWaite190/logs/ipod.txt",
-        2
+        1,
+        magic_string
         )
 
     return
 
-def scan_single_file(file ,line):
+def scan_single_file(file ,line, magic_string):
+
+
     with open (file, "r") as f:
-        for line in f[int(line):]:
-            f.readline()
+        content = f.readlines()
+        for line in content[line:]:
+            match = re.findall("%s" % magic_string, line)
+            print(line)
+            print(match)
 
 
 
