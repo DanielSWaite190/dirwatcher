@@ -26,31 +26,47 @@ def search_for_magic(filename, start_line, magic_string):
 
 
 def watch_directory(path, magic_string, extension, interval):
+    """build_model"""
+    """Walks through files in a given directory and  """
     directory_model = {}
     
-    for director in os.listdir(path):
-        if os.path.isfile(os.path.join(os.path.abspath(path), director)):
-            directory_model [director] = 0
+    for item in os.listdir(path):
+        if os.path.isfile(os.path.join(os.path.abspath(path), item)) and os.path.splitext(os.path.join(os.path.abspath(path), item))[1] == extension:
+            directory_model [item] = [
+                0, os.path.getsize(os.path.join(os.path.abspath(path), item))]
+                                        #file name, last line read, size in bytes
+    readfiles(directory_model, path, magic_string)
+    return 
 
-    # print(directory_model)
 
-    scan_single_file(
-        "/Users/daniel/Applications/visual_studio_code/kenzie/q3/dirwatcher-DanielSWaite190/logs/ipod.txt",
-        1,
-        magic_string
-        )
+def readfiles(model, path, magic_string):
+    for key, val in model.items():
+        # if os.path.getsize(os.path.join(os.path.abspath(path), key)) is not val[1]:
+        #     scan_single_file((os.path.join(os.path.abspath(path), key)), val[0], magic_string)
+        scan_single_file((os.path.join(os.path.abspath(path), key)), val[0], magic_string)
 
+        # print(os.path.getsize(os.path.join(os.path.abspath(path), key)), val[1])
     return
 
+
+
+
+
 def scan_single_file(file ,line, magic_string):
-
-
+    line_count = 0
     with open (file, "r") as f:
         content = f.readlines()
         for line in content[line:]:
             match = re.findall("%s" % magic_string, line)
-            print(line)
-            print(match)
+            # print(f"#{line_count}) {line}")   #  test
+
+            if match:
+                logger.info(f"Magic text was found in the {os.path.basename(file)} file, on line {line_count}.")
+
+            line_count += 1
+        # print(" ======= new file ======= ")
+    return
+
 
 
 
