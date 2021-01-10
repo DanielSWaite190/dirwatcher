@@ -37,7 +37,6 @@ def create_parser():
     parser.add_argument(
         "--file_extension", "-e", default=".txt",
             help="File extension of file to search. Default is .txt")
-
     return parser
 
 
@@ -84,9 +83,9 @@ def main(args):
             while not exit_flag:
                 time.sleep(float(parsed_args.polling_interva))
 
-                read_files(parsed_args.magic_string, parsed_args.directory)
-                # sync_model()
-                print(directory_model)
+                read_files(parsed_args.magic_string, parsed_args.directory, parsed_args.file_extension)
+                sync_model(parsed_args.directory, parsed_args.file_extension)
+                # print(directory_model)
 
 
             
@@ -117,7 +116,7 @@ def initiate_model(directory_location, file_extension):
     print(f"Initiate Model: {directory_model}")
 
 
-def read_files(magic_string, directory_location):
+def read_files(magic_string, directory_location, file_extension):
     for file_name in directory_model:
         file_to_open = os.path.join(os.path.abspath(directory_location), file_name)
         line_count = 0
@@ -125,41 +124,32 @@ def read_files(magic_string, directory_location):
 
         with open(file_to_open, "r") as f:
             for line in f:
-                # print(line)
                 contents.append(line)
-
             for line in contents[directory_model[file_name]:]:
                 match = re.findall("%s" % magic_string, line)
                 line_count += 1
-                # print(directory_model[file_name])
-                # print(line)
                 if match:
                     report_magic_text(file_name, line_count)
-                # print(f"line count: {line_count}")
-        if line_count is not 0:
-            sync_model(file_to_open, line_count)
+        if line_count != 0:
+            update_model(file_to_open, directory_location, file_extension, line_count)
     return
 
-    # for file_name in directory_model:
-    #     file_to_open = os.path.join(os.path.abspath(directory_location), file_name)
-    #     line_count = 0
 
-    #     with open(file_to_open, "r") as f:
-    #         for line in f:
-    #             match = re.findall("%s" % magic_string, line)
-    #             line_count += 1
-    #             # print(directory_model[file_name])
-    #             # print(line)
-    #             if match:
-    #                 report_magic_text(file_name, line_count)
-    #     sync_model(file_to_open, line_count)
-    # return
-
-
-def sync_model(file_name, line_count):
+def update_model(file_name, directory_location, file_extension, line_count):
+    global directory_model
+    # 1) Update line counts for know files.
     directory_model[os.path.basename(file_name)] = line_count
-    print(f"sync model: {line_count}")
     return
+
+
+def sync_model(directory_location, file_extension):
+     # Check for new file entries, initializing their line counts to zero.
+    for item in os.listdir(directory_location):
+        #If the item in not already saved in model, is a file and that file has the corect extension.
+        if item not in directory_model: 
+            if os.path.isfile(os.path.join(os.path.abspath(directory_location), item)) and os.path.splitext(os.path.join(os.path.abspath(directory_location), item))[1] == file_extension:
+                directory_model[item] = 0
+
 
 def report_magic_text(file_name, line_count):
     logger.info(
@@ -169,10 +159,9 @@ def report_magic_text(file_name, line_count):
 if __name__ == '__main__':
     main(sys.argv[1:])
 
-
     # ---------------------
     # 1. Write all doc strings!
     # 2. gitignor file?
     # 3. PEP8
+    # 4. Remove all print statments
     # ---------------------
-    # !. Double parser

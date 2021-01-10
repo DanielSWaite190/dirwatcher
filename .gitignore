@@ -6,3 +6,4 @@ pythonenv*
 *.log
 *.txt
 /logs
+oldcode.py
