@@ -2,6 +2,8 @@
 """
 Dirwatcher - A long-running program
 """
+__author__ = "Daniel S. Waite"
+
 import argparse
 import datetime
 import logging
@@ -11,6 +13,7 @@ import sys
 import os
 import re
 
+directory_model = {}
 exit_flag = False
 
 logging.basicConfig(
@@ -19,59 +22,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-
-def search_for_magic(filename, start_line, magic_string):
-    # Your code here
-    return
-
-
-def watch_directory(path, magic_string, extension, interval):
-    """build_model"""
-    """Walks through files in a given directory and  """
-    directory_model = {}
-    
-    for item in os.listdir(path):
-        if os.path.isfile(os.path.join(os.path.abspath(path), item)) and os.path.splitext(os.path.join(os.path.abspath(path), item))[1] == extension:
-            directory_model [item] = [
-                0, os.path.getsize(os.path.join(os.path.abspath(path), item))]
-                                        #file name, last line read, size in bytes
-    readfiles(directory_model, path, magic_string)
-    return 
-
-
-def readfiles(model, path, magic_string):
-    for key, val in model.items():
-        # if os.path.getsize(os.path.join(os.path.abspath(path), key)) is not val[1]:
-        #     scan_single_file((os.path.join(os.path.abspath(path), key)), val[0], magic_string)
-        scan_single_file((os.path.join(os.path.abspath(path), key)), val[0], magic_string)
-
-        # print(os.path.getsize(os.path.join(os.path.abspath(path), key)), val[1])
-    return
-
-
-
-
-
-def scan_single_file(file ,line, magic_string):
-    line_count = 0
-    with open (file, "r") as f:
-        content = f.readlines()
-        for line in content[line:]:
-            match = re.findall("%s" % magic_string, line)
-            # print(f"#{line_count}) {line}")   #  test
-
-            if match:
-                logger.info(f"Magic text was found in the {os.path.basename(file)} file, on line {line_count}.")
-
-            line_count += 1
-        # print(" ======= new file ======= ")
-    return
-
-
-
-
-# def detect_added_files():
-# def detect_removed_files():
 
 def create_parser():
     """Creates parsing arguments."""
@@ -122,15 +72,24 @@ def main(args):
         "-" * 105
     )
 
-    if not os.path.exists(parsed_args.directory):
-        os.mkdir(parsed_args.directory)
+    # if not os.path.exists(parsed_args.directory):
+    #     os.mkdir(parsed_args.directory)
 
+    # Loop number 1
     while not exit_flag:
         try:
-            watch_directory(parsed_args.directory, 
-                parsed_args.magic_string, parsed_args.file_extension,
-                    parsed_args.polling_interva)
-            pass
+            initiate_model(parsed_args.directory, parsed_args.file_extension)
+            
+            # Loop number 2
+            while not exit_flag:
+                time.sleep(float(parsed_args.polling_interva))
+
+                read_files(parsed_args.magic_string, parsed_args.directory)
+                # sync_model()
+                print(directory_model)
+
+
+            
         except Exception as e:
             # This is an UNHANDLED exception
             # Log an ERROR level message here
@@ -149,6 +108,64 @@ def main(args):
     )
 
 
+def initiate_model(directory_location, file_extension):
+    global directory_model
+    for item in os.listdir(directory_location):
+        #If the item in the for loop is a file and that file has the corect extension.
+        if os.path.isfile(os.path.join(os.path.abspath(directory_location), item)) and os.path.splitext(os.path.join(os.path.abspath(directory_location), item))[1] == file_extension:
+            directory_model[item] = 0
+    print(f"Initiate Model: {directory_model}")
+
+
+def read_files(magic_string, directory_location):
+    for file_name in directory_model:
+        file_to_open = os.path.join(os.path.abspath(directory_location), file_name)
+        line_count = 0
+        contents = []
+
+        with open(file_to_open, "r") as f:
+            for line in f:
+                # print(line)
+                contents.append(line)
+
+            for line in contents[directory_model[file_name]:]:
+                match = re.findall("%s" % magic_string, line)
+                line_count += 1
+                # print(directory_model[file_name])
+                # print(line)
+                if match:
+                    report_magic_text(file_name, line_count)
+                # print(f"line count: {line_count}")
+        if line_count is not 0:
+            sync_model(file_to_open, line_count)
+    return
+
+    # for file_name in directory_model:
+    #     file_to_open = os.path.join(os.path.abspath(directory_location), file_name)
+    #     line_count = 0
+
+    #     with open(file_to_open, "r") as f:
+    #         for line in f:
+    #             match = re.findall("%s" % magic_string, line)
+    #             line_count += 1
+    #             # print(directory_model[file_name])
+    #             # print(line)
+    #             if match:
+    #                 report_magic_text(file_name, line_count)
+    #     sync_model(file_to_open, line_count)
+    # return
+
+
+def sync_model(file_name, line_count):
+    directory_model[os.path.basename(file_name)] = line_count
+    print(f"sync model: {line_count}")
+    return
+
+def report_magic_text(file_name, line_count):
+    logger.info(
+        f"Magic text was found in the {os.path.basename(file_name)} file, on line {line_count}.")
+    return
+
 if __name__ == '__main__':
     main(sys.argv[1:])
 
@@ -158,3 +175,4 @@ if __name__ == '__main__':
     # 2. gitignor file?
     # 3. PEP8
     # ---------------------
+    # !. Double parser
