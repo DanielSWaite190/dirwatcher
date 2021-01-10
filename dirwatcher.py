@@ -83,8 +83,8 @@ def main(args):
             while not exit_flag:
                 time.sleep(float(parsed_args.polling_interva))
 
-                read_files(parsed_args.magic_string, parsed_args.directory, parsed_args.file_extension)
                 sync_model(parsed_args.directory, parsed_args.file_extension)
+                read_files(parsed_args.magic_string, parsed_args.directory, parsed_args.file_extension)
                 # print(directory_model)
 
 
@@ -113,7 +113,7 @@ def initiate_model(directory_location, file_extension):
         #If the item in the for loop is a file and that file has the corect extension.
         if os.path.isfile(os.path.join(os.path.abspath(directory_location), item)) and os.path.splitext(os.path.join(os.path.abspath(directory_location), item))[1] == file_extension:
             directory_model[item] = 0
-    print(f"Initiate Model: {directory_model}")
+    logger.info(f"Initiate Model: {directory_model} \n")
 
 
 def read_files(magic_string, directory_location, file_extension):
@@ -144,12 +144,20 @@ def update_model(file_name, directory_location, file_extension, line_count):
 
 def sync_model(directory_location, file_extension):
      # Check for new file entries, initializing their line counts to zero.
+    directory_model_copy = directory_model.copy()
     for item in os.listdir(directory_location):
         #If the item in not already saved in model, is a file and that file has the corect extension.
         if item not in directory_model: 
             if os.path.isfile(os.path.join(os.path.abspath(directory_location), item)) and os.path.splitext(os.path.join(os.path.abspath(directory_location), item))[1] == file_extension:
                 directory_model[item] = 0
+                directory_model_copy[item] = "x"
+                logger.info(f"The file {item} was added to your directory.")
 
+    for key in directory_model_copy.keys():
+        if key not in os.listdir(directory_location):
+            del directory_model[key]
+            logger.info(f"The file {key} was REMOVED to your directory!")
+    return
 
 def report_magic_text(file_name, line_count):
     logger.info(
