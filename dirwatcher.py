@@ -72,7 +72,7 @@ def main(args):
     )
 
     # if not os.path.exists(parsed_args.directory):
-    #     os.mkdir(parsed_args.directory)
+        # os.mkdir(parsed_args.directory)
 
     # Loop number 1
     while not exit_flag:
@@ -81,11 +81,11 @@ def main(args):
             
             # Loop number 2
             while not exit_flag:
-                time.sleep(float(parsed_args.polling_interva))
-
                 sync_model(parsed_args.directory, parsed_args.file_extension)
                 read_files(parsed_args.magic_string, parsed_args.directory, parsed_args.file_extension)
-                # print(directory_model)
+
+                print(f"Curent Model: {directory_model}")
+                time.sleep(float(parsed_args.polling_interva))
 
 
             
@@ -127,9 +127,11 @@ def read_files(magic_string, directory_location, file_extension):
                 contents.append(line)
             for line in contents[directory_model[file_name]:]:
                 match = re.findall("%s" % magic_string, line)
+                # print(f"Start Line: {directory_model[file_name]}")
                 line_count += 1
+                # print(f"Line Count: {line_count}")
                 if match:
-                    report_magic_text(file_name, line_count)
+                    report_magic_text(file_name, directory_model[os.path.basename(file_name)] + line_count)
         if line_count != 0:
             update_model(file_to_open, directory_location, file_extension, line_count)
     return
@@ -138,7 +140,7 @@ def read_files(magic_string, directory_location, file_extension):
 def update_model(file_name, directory_location, file_extension, line_count):
     global directory_model
     # 1) Update line counts for know files.
-    directory_model[os.path.basename(file_name)] = line_count
+    directory_model[os.path.basename(file_name)] = directory_model[os.path.basename(file_name)] + line_count
     return
 
 
@@ -147,11 +149,13 @@ def sync_model(directory_location, file_extension):
     directory_model_copy = directory_model.copy()
     for item in os.listdir(directory_location):
         #If the item in not already saved in model, is a file and that file has the corect extension.
-        if item not in directory_model: 
+        if item not in directory_model_copy.keys(): 
             if os.path.isfile(os.path.join(os.path.abspath(directory_location), item)) and os.path.splitext(os.path.join(os.path.abspath(directory_location), item))[1] == file_extension:
                 directory_model[item] = 0
                 directory_model_copy[item] = "x"
                 logger.info(f"The file {item} was added to your directory.")
+
+    # print(f"Copy: {directory_model_copy}")
 
     for key in directory_model_copy.keys():
         if key not in os.listdir(directory_location):
