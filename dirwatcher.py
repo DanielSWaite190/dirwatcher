@@ -43,12 +43,9 @@ def create_parser():
 def signal_handler(sig_num, frame):
     """Catches quit signals"""
     global exit_flag
-    # logger.warn('Received ' + signal.Signals(sig_num).name)
-    # logger.warn('Received ' + signal.signal(sig_num).name)
+    logger.warning('Received ' + signal.Signals(sig_num).name)
     logger.warning(sig_num)
-
     exit_flag = True
-    # logger.warning("QUIT")
     return None
 
 
@@ -90,10 +87,11 @@ def main(args):
 
                 # print(f"Curent Model: {directory_model}")
                 time.sleep(float(parsed_args.polling_interva))
+
+        except FileNotFoundError as e:
+            logger.error(f"This file do not exist {e}")
         except Exception as e:
-            # This is an UNHANDLED exception
-            # Log an ERROR level message here
-            print(e)
+            logger.error(e)
             pass
 
         time.sleep(float(parsed_args.polling_interva))
