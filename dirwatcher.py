@@ -29,14 +29,15 @@ def create_parser():
     parser = argparse.ArgumentParser(
         description="Searches a given directory for a specific line of text")
     parser.add_argument(
-        "directory", help="The directory that will be scaned for magic stringt")
+        "directory", help="The directory that will be scaned for magic" +
+        "stringt")
     parser.add_argument("magic_string", help="The text that will be searched")
     parser.add_argument(
         "--polling_interva", "-p", default=1,
-            help="How many times program refreshes in seconds. Default is 1")
+        help="How many times program refreshes in seconds. Default is 1")
     parser.add_argument(
         "--file_extension", "-e", default=".txt",
-            help="File extension of file to search. Default is .txt")
+        help="File extension of file to search. Default is .txt")
     return parser
 
 
@@ -112,8 +113,10 @@ def initiate_model(directory_location, file_extension):
     for item in os.listdir(directory_location):
         # If the item in the for loop is a file and that file has the corect
         #           extension.
-        if os.path.isfile(os.path.join(
-                os.path.abspath(directory_location), item)) and os.path.splitext(os.path.join(os.path.abspath(directory_location), item))[1] == file_extension:
+        if os.path.isfile(os.path.join(os.path.abspath(
+                directory_location), item)) and os.path.splitext(os.path.join(
+                    os.path.abspath(
+                        directory_location), item))[1] == file_extension:
             directory_model[item] = 0
     # print(f"Initiate Model: {directory_model} \n")
 
@@ -121,7 +124,8 @@ def initiate_model(directory_location, file_extension):
 def read_files(magic_string, directory_location, file_extension):
     """Reads all files curently represented in directory model"""
     for file_name in directory_model:
-        file_to_open = os.path.join(os.path.abspath(directory_location), file_name)
+        file_to_open = os.path.join(os.path.abspath(
+            directory_location), file_name)
         line_count = 0
         contents = []
 
@@ -132,9 +136,12 @@ def read_files(magic_string, directory_location, file_extension):
                 match = re.findall("%s" % magic_string, line)
                 line_count += 1
                 if match:
-                    report_magic_text(file_name, directory_model[os.path.basename(file_name)] + line_count)
+                    report_magic_text(
+                        file_name, directory_model[os.path.basename(
+                            file_name)] + line_count)
         if line_count != 0:
-            update_model(file_to_open, directory_location, file_extension, line_count)
+            update_model(
+                file_to_open, directory_location, file_extension, line_count)
     return
 
 
@@ -142,7 +149,8 @@ def update_model(file_name, directory_location, file_extension, line_count):
     """Updates the last line read in directory model entrys"""
     global directory_model
     # 1) Update line counts for know files.
-    directory_model[os.path.basename(file_name)] = directory_model[os.path.basename(file_name)] + line_count
+    directory_model[os.path.basename(
+        file_name)] = directory_model[os.path.basename(file_name)] + line_count
     return
 
 
@@ -151,9 +159,13 @@ def sync_model(directory_location, file_extension):
     # Check for new file entries, initializing their line counts to zero.
     directory_model_copy = directory_model.copy()
     for item in os.listdir(directory_location):
-        # If the item in not already saved in model, is a file and that file has the corect extension.
+        # If the item in not already saved in model, is a file and that file
+        #   has the corect extension.
         if item not in directory_model_copy.keys():
-            if os.path.isfile(os.path.join(os.path.abspath(directory_location), item)) and os.path.splitext(os.path.join(os.path.abspath(directory_location), item))[1] == file_extension:
+            if os.path.isfile(os.path.join(os.path.abspath(
+                directory_location), item)) and os.path.splitext(os.path.join(
+                    os.path.abspath(
+                        directory_location), item))[1] == file_extension:
                 directory_model[item] = 0
                 directory_model_copy[item] = "x"
                 logger.info(f"The file {item} was added to your directory.")
@@ -170,7 +182,8 @@ def sync_model(directory_location, file_extension):
 def report_magic_text(file_name, line_count):
     """Log out magic text and the line it was found on"""
     logger.info(
-        f"Magic text was found in the {os.path.basename(file_name)} file, on line {line_count}.")
+        f"Magic text was found in the +"
+        f"{os.path.basename(file_name)} file, on line {line_count}.")
     return
 
 
