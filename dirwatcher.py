@@ -58,7 +58,7 @@ def main(args):
     parser = create_parser()
     if not args:
         parser.print_usage()
-        sys.exit(1)
+        # sys.exit(1)
 
     parsed_args = parser.parse_args(args)
 
